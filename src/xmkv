@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+if [[ $# -eq 3 && $1 == ?* && -d $2 ]]
+then
+  _extension=$1
+  _src_dir=$2
+  _dest_dir=$3
+
+  for video in "$_src_dir"/*.$_extension
+  do
+    video_name="${video##*/}"
+    video_stem="${video_name%.*}"
+
+    if [[ ! -d "$_dest_dir" ]]
+    then
+      mkdir -p "$_dest_dir"
+    fi
+
+    echo -e "\n\e[33mTranscoding\e[0 ${video_name}..."
+    ffmpeg -loglevel panic -stats -nostdin -i "$video" -c:v libx265 -x265-params log-level=error -crf 28 -c:a aac "${_dest_dir}/${video_stem}.mkv"
+  done
+  echo
+  echo -e '\e[32mTranscode Complete!\e[0m'
+else
+  echo -e "\e[35mUsage:\e[0m ${0##*/} <targetExtension> <inputDirectory> <outputDirectory>"
+  exit 1
+fi
+
+
